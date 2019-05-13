@@ -176,20 +176,26 @@ public class WaterfallLayout: UICollectionViewLayout {
                 newLayoutAttributes.append(sectionAttributes)
             }
         }
-
-        dump(newLayoutAttributes)
+        
         return newLayoutAttributes
-//        return allItemAttributes.filter { rect.intersects($0.frame) }
     }
     
     override public func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        
         if elementKind == UICollectionView.elementKindSectionHeader {
-            guard let boundaries = boundaries(forSection: indexPath.section) else { return headersAttribute[indexPath.section] }
-            guard let collectionView = collectionView else { return headersAttribute[indexPath.section] }
-            let contentOffsetY = collectionView.contentOffset.y
-            var frameForSupplymentaryView = headersAttribute[indexPath.section]!.frame
+            guard let boundaries = boundaries(forSection: indexPath.section) else {
+                return headersAttribute[indexPath.section]
+            }
             
+            guard let collectionView = collectionView else {
+                return headersAttribute[indexPath.section]
+            }
+            
+            
+            guard var frameForSupplymentaryView = headersAttribute[indexPath.section]?.frame else {
+                return headersAttribute[indexPath.section]
+            }
+            
+            let contentOffsetY = collectionView.contentOffset.y
             let minimum = boundaries.minimum - frameForSupplymentaryView.height
             let maximum = boundaries.maximum - frameForSupplymentaryView.height
             
@@ -224,14 +230,11 @@ public class WaterfallLayout: UICollectionViewLayout {
             let lastItem = layoutAttributesForItem(at: IndexPath(item: numberOfItems-1, section: section)) {
             result.minimum = firstItem.frame.minY
             result.maximum = lastItem.frame.maxY
+            
             var footerHeight = CGFloat(0)
-            
-            
-            if layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionFooter, at: IndexPath(item: 0, section: section)) != nil {
-                footerHeight += 48.0
+            if let footer = layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionFooter, at: IndexPath(item: 0, section: section)) {
+                footerHeight += footer.frame.height
             }
-//            result.minimum -= 48.0
-//            result.maximum -= 16.0
             
             result.minimum -= sectionInset.top
             result.maximum += (sectionInset.top + sectionInset.bottom) + footerHeight
