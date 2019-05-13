@@ -15,7 +15,7 @@ class ViewController: UIViewController {
         didSet {
             let layout = WaterfallLayout()
             layout.delegate = self
-            layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+            layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
             layout.minimumLineSpacing = 8.0
             layout.minimumInteritemSpacing = 8.0
             layout.headerHeight = 50.0
