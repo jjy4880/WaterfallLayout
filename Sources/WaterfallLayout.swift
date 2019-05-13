@@ -105,7 +105,7 @@ public class WaterfallLayout: UICollectionViewLayout {
     private lazy var allItemAttributes = [UICollectionViewLayoutAttributes]()
     private lazy var sectionItemAttributes = [[UICollectionViewLayoutAttributes]]()
     private lazy var cachedItemSizes = [IndexPath: CGSize]()
-
+    private lazy var cellAttribute = [UICollectionViewLayoutAttributes]()
     public weak var delegate: WaterfallLayoutDelegate?
 
     public override func prepare() {
@@ -154,7 +154,7 @@ public class WaterfallLayout: UICollectionViewLayout {
         let sections = NSMutableIndexSet()
         var newLayoutAttributes = [UICollectionViewLayoutAttributes]()
         
-        for layoutAttributesSet in allItemAttributes {
+        for layoutAttributesSet in cellAttribute {
             if layoutAttributesSet.representedElementCategory == .cell {
                 newLayoutAttributes.append(layoutAttributesSet)
                 sections.add(layoutAttributesSet.indexPath.section)
@@ -169,6 +169,13 @@ public class WaterfallLayout: UICollectionViewLayout {
                 newLayoutAttributes.append(sectionAttributes)
             }
         }
+        
+        for section in sections {
+            let indexPath = IndexPath(item: 0, section: section)
+            if let sectionAttributes = self.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionFooter, at: indexPath) {
+                newLayoutAttributes.append(sectionAttributes)
+            }
+        }
 
         dump(newLayoutAttributes)
         return newLayoutAttributes
@@ -176,26 +183,30 @@ public class WaterfallLayout: UICollectionViewLayout {
     }
     
     override public func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard let boundaries = boundaries(forSection: indexPath.section) else { return headersAttribute[indexPath.section] }
-        guard let collectionView = collectionView else { return headersAttribute[indexPath.section] }
-        let contentOffsetY = collectionView.contentOffset.y
-        var frameForSupplymentaryView = headersAttribute[indexPath.section]!.frame
         
-        let minimum = boundaries.minimum - frameForSupplymentaryView.height
-        let maximum = boundaries.maximum - frameForSupplymentaryView.height
-        
-        if contentOffsetY < minimum {
-            frameForSupplymentaryView.origin.y = minimum
-        } else if contentOffsetY > maximum {
-            frameForSupplymentaryView.origin.y = maximum
+        if elementKind == UICollectionView.elementKindSectionHeader {
+            guard let boundaries = boundaries(forSection: indexPath.section) else { return headersAttribute[indexPath.section] }
+            guard let collectionView = collectionView else { return headersAttribute[indexPath.section] }
+            let contentOffsetY = collectionView.contentOffset.y
+            var frameForSupplymentaryView = headersAttribute[indexPath.section]!.frame
+            
+            let minimum = boundaries.minimum - frameForSupplymentaryView.height
+            let maximum = boundaries.maximum - frameForSupplymentaryView.height
+            
+            if contentOffsetY < minimum {
+                frameForSupplymentaryView.origin.y = minimum
+            } else if contentOffsetY > maximum {
+                frameForSupplymentaryView.origin.y = maximum
+            } else {
+                frameForSupplymentaryView.origin.y = contentOffsetY
+            }
+            
+            headersAttribute[indexPath.section]?.frame = frameForSupplymentaryView
+            headersAttribute[indexPath.section]?.zIndex = 9999
+            return headersAttribute[indexPath.section]
         } else {
-            frameForSupplymentaryView.origin.y = contentOffsetY
+            return footersAttribute[indexPath.section]
         }
-        
-        headersAttribute[indexPath.section]?.frame = frameForSupplymentaryView
-        headersAttribute[indexPath.section]?.zIndex = 9999
-        return headersAttribute[indexPath.section]
-        
     }
     
     func boundaries(forSection section: Int) -> (minimum: CGFloat, maximum: CGFloat)? {
@@ -213,11 +224,17 @@ public class WaterfallLayout: UICollectionViewLayout {
             let lastItem = layoutAttributesForItem(at: IndexPath(item: numberOfItems-1, section: section)) {
             result.minimum = firstItem.frame.minY
             result.maximum = lastItem.frame.maxY
+            var footerHeight = CGFloat(0)
+            
+            
+            if layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionFooter, at: IndexPath(item: 0, section: section)) != nil {
+                footerHeight += 48.0
+            }
 //            result.minimum -= 48.0
-            result.maximum -= 16.0
+//            result.maximum -= 16.0
             
             result.minimum -= sectionInset.top
-            result.maximum += (sectionInset.top + sectionInset.bottom)
+            result.maximum += (sectionInset.top + sectionInset.bottom) + footerHeight
         }
         return result
         
@@ -259,6 +276,7 @@ public class WaterfallLayout: UICollectionViewLayout {
     }
 
     private func cleaunup() {
+        cellAttribute.removeAll()
         headersAttribute.removeAll()
         footersAttribute.removeAll()
         columnHeights.removeAll()
@@ -374,6 +392,8 @@ public class WaterfallLayout: UICollectionViewLayout {
                 columnHeights[section] = Array(repeating: maxHeight, count: columnCount)
             }
         }
+        
+        cellAttribute.append(contentsOf: itemAttributes)
         allItemAttributes.append(contentsOf: itemAttributes)
         sectionItemAttributes.append(itemAttributes)
     }

@@ -19,10 +19,12 @@ class ViewController: UIViewController {
             layout.minimumLineSpacing = 8.0
             layout.minimumInteritemSpacing = 8.0
             layout.headerHeight = 50.0
+            layout.footerHeight = 50.0
             collectionView.collectionViewLayout = layout
             collectionView.register(UINib(nibName: "TextCell", bundle: nil), forCellWithReuseIdentifier: "TextCell")
             collectionView.register(ColorCell.self, forCellWithReuseIdentifier: "ColorCell")
             collectionView.register(UINib(nibName: "HeaderView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
+            collectionView.register(UINib(nibName: "HeaderView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "HeaderView")
             collectionView.dataSource = self
         }
     }
@@ -84,6 +86,16 @@ extension ViewController: UICollectionViewDataSource {
             case .news: header.configure(with: "texts using auto layout")
             }
             return header
+            
+        case UICollectionView.elementKindSectionFooter:
+            let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! HeaderView
+            switch response.contents[indexPath.section] {
+            case .topicItem: footer.configure(with: "Topic color using flow layout")
+            case .items: footer.configure(with: "Colors using waterfall layout")
+            case .news: footer.configure(with: "texts using auto layout")
+            }
+            return footer
+            
         default:
             return UICollectionReusableView()
         }
