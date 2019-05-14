@@ -137,6 +137,7 @@ public class WaterfallLayout: UICollectionViewLayout {
         }
         var contentSize = collectionView.bounds.size
         contentSize.height = columnHeights.last?.first ?? 0.0
+        contentSize.height += minimumLineSpacing
         return contentSize
     }
 
