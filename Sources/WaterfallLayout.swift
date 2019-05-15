@@ -296,8 +296,10 @@ public class WaterfallLayout: UICollectionViewLayout {
         let headerHeight = self.headerHeight(for: section)
         let headerInset = self.headerInset(for: section)
 
-        position += headerInset.top
-
+        if section != 0 {
+            position += headerInset.top
+        }
+        
         if headerHeight > 0 {
             let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, with: [section, 0])
             attributes.frame = CGRect(
