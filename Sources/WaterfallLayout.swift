@@ -196,7 +196,7 @@ public class WaterfallLayout: UICollectionViewLayout {
             }
             
             let contentOffsetY = collectionView.contentOffset.y
-            let minimum = boundaries.minimum - frameForSupplymentaryView.height
+            let minimum = boundaries.minimum - frameForSupplymentaryView.height - minimumInteritemSpacing
             let maximum = boundaries.maximum - frameForSupplymentaryView.height
             
             if contentOffsetY < minimum {
