@@ -211,6 +211,7 @@ public class WaterfallLayout: UICollectionViewLayout {
             headersAttribute[indexPath.section]?.zIndex = 9999
             return headersAttribute[indexPath.section]
         } else {
+            if indexPath.isEmpty { return nil }
             return footersAttribute[indexPath.section]
         }
     }
